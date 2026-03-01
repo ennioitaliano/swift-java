@@ -80,6 +80,17 @@ func assertOutput(
     case .java:
       try generator.writeExportedJavaSources(&printer)
     }
+  case .kotlin:
+    let generator = Swift2KotlinGeneratorImpl(
+      config: config,
+      translator: translator,
+      kotlinPackage: "com.example.swift",
+      kotlinOutputDirectory: "/fake"
+    )
+    switch renderKind {
+    case .swift, .java:
+      try generator.writeExportedKotlinSources(&printer)
+    }
   }
   output = printer.finalize()
 

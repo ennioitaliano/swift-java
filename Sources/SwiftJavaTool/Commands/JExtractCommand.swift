@@ -52,8 +52,8 @@ extension SwiftJava {
     @Option(help: "The Java package the generated Java code should be emitted into.")
     var javaPackage: String? = nil
 
-    @Option(help: "The directory where generated Swift files should be written. Generally used with jextract mode.")
-    var outputSwift: String
+    @Option(help: "The directory where generated Swift files should be written. Required for jni and ffm modes.")
+    var outputSwift: String?
 
     @Option(help: "The directory where generated Java files should be written. Generally used with jextract mode.")
     var outputJava: String
@@ -108,6 +108,11 @@ extension SwiftJava.JExtractCommand {
     config.swiftModule = self.effectiveSwiftModule
     config.outputJavaDirectory = outputJava
     config.outputSwiftDirectory = outputSwift
+
+    if config.effectiveMode != .kotlin, outputSwift == nil {
+      throw ValidationError(
+        "Missing --output-swift directory for '\(config.effectiveMode)' mode! \(Self.helpMessage())")
+    }
 
     configure(&config.writeEmptyFiles, overrideWith: writeEmptyFiles)
     configure(&config.enableJavaCallbacks, overrideWith: enableJavaCallbacks)

@@ -68,9 +68,6 @@ public struct SwiftToJava {
       translator.add(filePath: file.path, text: text)
     }
 
-    guard let outputSwiftDirectory = config.outputSwiftDirectory else {
-      fatalError("Missing --output-swift directory!")
-    }
     guard let outputJavaDirectory = config.outputJavaDirectory else {
       fatalError("Missing --output-java directory!")
     }
@@ -87,6 +84,9 @@ public struct SwiftToJava {
 
     switch config.effectiveMode {
     case .ffm:
+      guard let outputSwiftDirectory = config.outputSwiftDirectory else {
+        fatalError("Missing --output-swift directory!")
+      }
       let generator = FFMSwift2JavaGenerator(
         config: self.config,
         translator: translator,
@@ -98,6 +98,9 @@ public struct SwiftToJava {
       try generator.generate()
 
     case .jni:
+      guard let outputSwiftDirectory = config.outputSwiftDirectory else {
+        fatalError("Missing --output-swift directory!")
+      }
       let generator = JNISwift2JavaGenerator(
         config: self.config,
         translator: translator,
@@ -105,6 +108,16 @@ public struct SwiftToJava {
         swiftOutputDirectory: outputSwiftDirectory,
         javaOutputDirectory: outputJavaDirectory,
         javaClassLookupTable: wrappedJavaClassesLookupTable
+      )
+
+      try generator.generate()
+
+    case .kotlin:
+      let generator = Swift2KotlinGeneratorImpl(
+        config: self.config,
+        translator: translator,
+        kotlinPackage: config.javaPackage ?? "",
+        kotlinOutputDirectory: outputJavaDirectory
       )
 
       try generator.generate()
