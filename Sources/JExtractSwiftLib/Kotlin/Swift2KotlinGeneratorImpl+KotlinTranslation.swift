@@ -123,7 +123,8 @@ extension Swift2KotlinGeneratorImpl {
         }
         
         throw KotlinTranslationError.unsupportedSwiftType(swiftType)
-        
+      case .void:
+        return .unit
       default:
         throw KotlinTranslationError.unsupportedSwiftType(swiftType)
       }
