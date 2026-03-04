@@ -28,12 +28,12 @@ final class KotlinTranslationTests {
       .java,
       expectedChunks: [
         "package com.example.swift",
-        "fun echoInt(i: Int): Int",
+        "fun echoInt(i: Long): Long",
         "fun echoInt32(i32: Int): Int",
         "fun negate(flag: Boolean): Boolean",
         "fun scale(value: Double): Double",
         "fun greet(name: String): String",
-        "fun noReturn(i: Int): Unit",
+        "fun noReturn(i: Long): Unit",
         "fun noReturn(): Unit",
       ]
     )
@@ -51,7 +51,7 @@ final class KotlinTranslationTests {
       .kotlin,
       .java,
       expectedChunks: [
-        "fun combine(arg0: Int, arg1: Boolean): Int"
+        "fun combine(arg0: Long, arg1: Boolean): Long"
       ]
     )
   }

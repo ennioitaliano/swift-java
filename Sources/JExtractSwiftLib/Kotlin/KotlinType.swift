@@ -8,6 +8,7 @@
 public enum KotlinType: String, Equatable, Hashable {
   case boolean
   case int
+  case long
   case double
   case string
   case unit
