@@ -19,6 +19,7 @@ final class KotlinTranslationTests {
       public func scale(value: Double) -> Double
       public func greet(name: String) -> String
       public func noReturn(i: Int) -> Void
+      public func noReturn()
       """
 
     try assertOutput(
@@ -33,6 +34,7 @@ final class KotlinTranslationTests {
         "fun scale(value: Double): Double",
         "fun greet(name: String): String",
         "fun noReturn(i: Int): Unit",
+        "fun noReturn(): Unit",
       ]
     )
   }

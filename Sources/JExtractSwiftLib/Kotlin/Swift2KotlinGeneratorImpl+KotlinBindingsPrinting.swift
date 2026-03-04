@@ -48,11 +48,21 @@ extension Swift2KotlinGeneratorImpl {
   private func printModule(_ printer: inout CodePrinter) {
     printHeader(&printer)
     printPackage(&printer)
-    
-    for decl in analysis.importedGlobalFuncs {
-      self.logger.trace("Print global function: \(decl)")
-      printFunctionDowncallMethods(&printer, decl)
-      printer.println()
+    printImports(&printer)
+
+    printModuleObject(&printer)
+  }
+
+  private func printModuleObject(_ printer: inout CodePrinter) {
+    printer.printBraceBlock("object \(swiftModuleName)") { printer in
+      printRuntimeInit(&printer)
+
+      for decl in analysis.importedGlobalFuncs {
+        self.logger.trace("Print global function: \(decl)")
+        printNativeDeclaration(&printer, decl)
+        printWrapperMethod(&printer, decl)
+        printer.println()
+      }
     }
   }
   
@@ -75,7 +85,28 @@ extension Swift2KotlinGeneratorImpl {
     }
   }
   
-  private func printFunctionDowncallMethods(
+  private func printImports(_ printer: inout CodePrinter) {
+    printer.print(
+      """
+      import org.swift.swiftkit.core.*
+      """
+    )
+  }
+  
+  private func printRuntimeInit(_ printer: inout CodePrinter) {
+    printer.print(
+      """
+      private const val LIB_NAME = "\(swiftModuleName)"
+
+      init {
+        System.loadLibrary(SwiftLibraries.LIB_NAME_SWIFT_JAVA)
+        System.loadLibrary(LIB_NAME)
+      }
+      """
+    )
+  }
+  
+  private func printNativeDeclaration(
     _ printer: inout CodePrinter,
     _ decl: ImportedFunc
   ) {
@@ -84,34 +115,82 @@ extension Swift2KotlinGeneratorImpl {
       return
     }
     
-    printKotlinBindingWrapperMethod(&printer, decl)
+    printNativeBinding(&printer, decl)
   }
   
-  private func printKotlinBindingWrapperMethod(
+  private func printNativeBinding(
     _ printer: inout CodePrinter,
     _ decl: ImportedFunc
   ) {
     guard let translatedDecl = translatedDecl(for: decl) else {
       fatalError("Decl was not translated, \(decl)")
     }
-    printKotlinBindingWrapperMethod(&printer, translatedDecl, importedFunc: decl)
+    printNativeBinding(&printer, translatedDecl)
   }
   
-  private func printKotlinBindingWrapperMethod(
+  private func printNativeBinding(
     _ printer: inout CodePrinter,
-    _ translatedDecl: KotlinTranslatedFunctionDecl,
-    importedFunc: ImportedFunc? = nil
+    _ translatedDecl: KotlinTranslatedFunctionDecl
   ) {
     let translatedSignature = translatedDecl.translatedFunctionSignature
     let resultType = translatedSignature.resultType.render()
-    let parameters = translatedDecl.translatedFunctionSignature.parameters.map { $0.renderParameter() }
-    let parametersStr = parameters.joined(separator: ", ")
+    let (renderedParameters, _) = renderedParametersAndArguments(from: translatedSignature.parameters)
+    
+    let nativeSignature =
+    "@JvmStatic\nprivate external fun \(translatedDecl.nativeFunctionName)(\(renderedParameters)): \(resultType)"
+
+    printer.print(nativeSignature)
+  }
+  
+  private func printWrapperMethod(
+    _ printer: inout CodePrinter,
+    _ decl: ImportedFunc
+  ) {
+    guard translatedDecl(for: decl) != nil else {
+      // Failed to translate. Skip.
+      return
+    }
+    
+    printBindingWrapperMethod(&printer, decl)
+  }
+  
+  private func printBindingWrapperMethod(
+    _ printer: inout CodePrinter,
+    _ decl: ImportedFunc
+  ) {
+    guard let translatedDecl = translatedDecl(for: decl) else {
+      fatalError("Decl was not translated, \(decl)")
+    }
+    printBindingWrapperMethod(&printer, translatedDecl)
+  }
+  
+  private func renderedParametersAndArguments(from parameters: [KotlinParameter]) -> (String, String) {
+    let renderedParameters = parameters.map({ $0.renderParameter() }).joined(separator: ", ")
+    let argumentNames = parameters.map(\.name).joined(separator: ", ")
+    return (renderedParameters, argumentNames)
+  }
+
+  private func printBindingWrapperMethod(
+    _ printer: inout CodePrinter,
+    _ translatedDecl: KotlinTranslatedFunctionDecl
+  ) {
+    let translatedSignature = translatedDecl.translatedFunctionSignature
+    let resultType = translatedSignature.resultType.render()
+    let (renderedParameters, argumentNames) = renderedParametersAndArguments(from: translatedSignature.parameters)
     
     let signature =
-    "fun \(translatedDecl.name)(\(parametersStr)): \(resultType)"
+    "@JvmStatic\nfun \(translatedDecl.name)(\(renderedParameters)): \(resultType)"
+    
+    let nativeCall = "\(translatedDecl.nativeFunctionName)(\(argumentNames))"
+    
+    let body = if translatedDecl.translatedFunctionSignature.resultType == .unit {
+      nativeCall
+    } else {
+      "return \(nativeCall)"
+    }
     
     printer.printBraceBlock(signature) { printer in
-      printer.print("TODO(\"Not implemented\")")
+      printer.print(body)
     }
   }
 }

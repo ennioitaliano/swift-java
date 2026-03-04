@@ -641,6 +641,13 @@ extension JNISwift2JavaGenerator {
       case .nominal(let nominalType):
         if let knownType = nominalType.nominalTypeDecl.knownTypeKind {
           switch knownType {
+          case .void:
+            return NativeResult(
+              javaType: .void,
+              conversion: .placeholder,
+              outParameters: []
+            )
+
           case .optional:
             guard let genericArgs = nominalType.genericArguments, genericArgs.count == 1 else {
               throw JavaTranslationError.unsupportedSwiftType(swiftResult.type)

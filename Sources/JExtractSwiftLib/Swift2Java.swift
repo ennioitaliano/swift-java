@@ -113,14 +113,30 @@ public struct SwiftToJava {
       try generator.generate()
 
     case .kotlin:
-      let generator = Swift2KotlinGeneratorImpl(
+      guard let outputSwiftDirectory = config.outputSwiftDirectory else {
+        fatalError("Missing --output-swift directory!")
+      }
+      
+      let jniGenerator = JNISwift2JavaGenerator(
+        config: self.config,
+        translator: translator,
+        javaPackage: config.javaPackage ?? "",
+        swiftOutputDirectory: outputSwiftDirectory,
+        javaOutputDirectory: outputJavaDirectory,
+        javaClassLookupTable: wrappedJavaClassesLookupTable
+      )
+      
+      try jniGenerator.writeSwiftThunkSources()
+      
+      let kotlinGenerator = Swift2KotlinGeneratorImpl(
         config: self.config,
         translator: translator,
         kotlinPackage: config.javaPackage ?? "",
+        swiftOutputDirectory: outputSwiftDirectory,
         kotlinOutputDirectory: outputJavaDirectory
       )
 
-      try generator.generate()
+      try kotlinGenerator.generate()
     }
 
     print("[swift-java] Imported Swift module '\(swiftModule)': " + "done.".green)

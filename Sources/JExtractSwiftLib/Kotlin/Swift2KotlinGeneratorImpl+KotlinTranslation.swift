@@ -52,20 +52,21 @@ extension Swift2KotlinGeneratorImpl {
       
       return KotlinTranslatedFunctionDecl(
         name: kotlinName,
+        nativeFunctionName: "$\(kotlinName)",
         translatedFunctionSignature: translatedFunctionSignature
       )
     }
     
     func translate(
       functionSignature: SwiftFunctionSignature,
-    ) throws -> TranslatedFunctionSignature {
+    ) throws -> KotlinTranslatedFunctionSignature {
       let parameters = try translateParameters(
         functionSignature.parameters.map { ($0.parameterName, $0.type) }
       )
       
       let resultType = try translate(swiftResult: functionSignature.result)
       
-      return TranslatedFunctionSignature(
+      return KotlinTranslatedFunctionSignature(
         parameters: parameters,
         resultType: resultType,
       )
@@ -123,7 +124,8 @@ extension Swift2KotlinGeneratorImpl {
         }
         
         throw KotlinTranslationError.unsupportedSwiftType(swiftType)
-        
+      case .void:
+        return .unit
       default:
         throw KotlinTranslationError.unsupportedSwiftType(swiftType)
       }
@@ -133,12 +135,17 @@ extension Swift2KotlinGeneratorImpl {
   struct KotlinTranslatedFunctionDecl {
     /// Kotlin function name
     let name: String
-
+    
+    /// The name of the native function
+    let nativeFunctionName: String
+    
     /// Function signature of the Kotlin function the user will call
-    let translatedFunctionSignature: TranslatedFunctionSignature
+    ///
+    /// For the current minimal Kotlin support, it can also be used as function signature of the native function that will be implemented by Swift.
+    let translatedFunctionSignature: KotlinTranslatedFunctionSignature
   }
 
-  struct TranslatedFunctionSignature {
+  struct KotlinTranslatedFunctionSignature {
     var parameters: [KotlinParameter]
     var resultType: KotlinType
   }

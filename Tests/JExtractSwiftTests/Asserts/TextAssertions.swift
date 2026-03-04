@@ -85,6 +85,7 @@ func assertOutput(
       config: config,
       translator: translator,
       kotlinPackage: "com.example.swift",
+      swiftOutputDirectory: "/fake",
       kotlinOutputDirectory: "/fake"
     )
     switch renderKind {

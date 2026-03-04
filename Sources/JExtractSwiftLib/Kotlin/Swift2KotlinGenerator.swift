@@ -18,6 +18,7 @@ package class Swift2KotlinGeneratorImpl: Swift2KotlinGenerator {
   let analysis: AnalysisResult
   let swiftModuleName: String
   let kotlinPackage: String
+  let swiftOutputDirectory: String
   let kotlinOutputDirectory: String
   let lookupContext: SwiftTypeLookupContext
 
@@ -32,6 +33,7 @@ package class Swift2KotlinGeneratorImpl: Swift2KotlinGenerator {
     config: Configuration,
     translator: Swift2JavaTranslator,
     kotlinPackage: String,
+    swiftOutputDirectory: String,
     kotlinOutputDirectory: String
   ) {
     self.config = config
@@ -39,6 +41,7 @@ package class Swift2KotlinGeneratorImpl: Swift2KotlinGenerator {
     self.analysis = translator.result
     self.swiftModuleName = translator.swiftModuleName
     self.kotlinPackage = kotlinPackage
+    self.swiftOutputDirectory = swiftOutputDirectory
     self.kotlinOutputDirectory = kotlinOutputDirectory
     self.lookupContext = translator.lookupContext
   }
