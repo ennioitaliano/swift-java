@@ -52,7 +52,7 @@ extension Swift2KotlinGeneratorImpl {
       
       return KotlinTranslatedFunctionDecl(
         name: kotlinName,
-        nativeFunctionName: "$\(kotlinName)",
+        nativeFunctionName: kotlinName.kotlinNativeDowncallMethodName,
         translatedFunctionSignature: translatedFunctionSignature
       )
     }

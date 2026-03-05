@@ -66,6 +66,14 @@ extension String {
     .joined()
   }
 
+  /// Kotlin-safe native downcall method name used by Kotlin bindings and JNI symbol generation.
+  var kotlinNativeDowncallMethodName: String {
+    guard !isEmpty else {
+      return "native"
+    }
+    return "native\(firstCharacterUppercased)"
+  }
+
   /// Looks up self as a SwiftJava wrapped class name and converts it
   /// into a `JavaType.class` if it exists in `lookupTable`.
   func parseJavaClassFromSwiftJavaName(in lookupTable: [String: String]) -> JavaType? {

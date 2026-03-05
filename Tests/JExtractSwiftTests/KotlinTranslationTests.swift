@@ -28,6 +28,8 @@ final class KotlinTranslationTests {
       .java,
       expectedChunks: [
         "package com.example.swift",
+        "private external fun nativeEchoInt(i: Long): Long",
+        "return nativeEchoInt(i)",
         "fun echoInt(i: Long): Long",
         "fun echoInt32(i32: Int): Int",
         "fun negate(flag: Boolean): Boolean",

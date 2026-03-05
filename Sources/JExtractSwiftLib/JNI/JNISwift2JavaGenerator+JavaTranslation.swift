@@ -84,6 +84,15 @@ extension JNISwift2JavaGenerator {
     let protocolWrappers: [ImportedNominalType: JavaInterfaceSwiftWrapper]
     let logger: Logger
 
+    private func nativeFunctionName(for methodName: String) -> String {
+      switch config.effectiveMode {
+      case .kotlin:
+        return methodName.kotlinNativeDowncallMethodName
+      case .ffm, .jni:
+        return "$\(methodName)"
+      }
+    }
+
     func translate(enumCase: ImportedEnumCase) throws -> TranslatedEnumCase {
       let nativeTranslation = NativeJavaTranslation(
         config: self.config,
@@ -145,7 +154,7 @@ extension JNISwift2JavaGenerator {
         isStatic: false,
         isThrowing: false,
         isAsync: false,
-        nativeFunctionName: "$\(getAsCaseName)",
+        nativeFunctionName: nativeFunctionName(for: getAsCaseName),
         parentName: enumName,
         functionTypes: [],
         translatedFunctionSignature: TranslatedFunctionSignature(
@@ -279,7 +288,7 @@ extension JNISwift2JavaGenerator {
         isStatic: decl.isStatic || !decl.hasParent || decl.isInitializer,
         isThrowing: decl.isThrowing,
         isAsync: decl.isAsync,
-        nativeFunctionName: "$\(javaName)",
+        nativeFunctionName: nativeFunctionName(for: javaName),
         parentName: parentName,
         functionTypes: funcTypes,
         translatedFunctionSignature: translatedFunctionSignature,
